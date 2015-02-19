@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+
+    <string name="app_name">Clipboard Clips</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_about">AboutActivity</string>
+    <string name="title_activity_drawar_list_adapter">DrawarListAdapter</string>
+    <string name="title_activity_drawer_list_adapter">DrawerListAdapter</string>
+    
+     <string name="drawer_open">Drawer Open</string>
+    <string name="drawer_close">Drawer Close</string>
+
+</resources>

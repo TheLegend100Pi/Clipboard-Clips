@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <!-- Search, should appear as action button -->
+    <!-- Settings, should always be in the overflow -->
+    <item android:id="@+id/action_copy_this" android:title="Copy"></item><item android:id="@+id/action_edit_this"
+          android:title="Edit" />
+    <item android:id="@+id/action_delete_this" 
+           android:title="Delete"></item>
+    <item android:id="@+id/action_share_this"
+        android:showAsAction="ifRoom"
+        android:title="Share"
+        android:actionProviderClass="android.widget.ShareActionProvider" />
+    
+</menu>

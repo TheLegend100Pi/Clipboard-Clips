@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/arr_recent_first"
+        android:title="Recent First"
+    />
+    <item
+        android:id="@+id/arr_recent_last"
+        android:title="Recent Last"
+    />
+    <item android:id="@+id/arr_freqUsed" android:title="Frequently Used"></item><item
+        android:id="@+id/arr_appName_ascend"
+        android:title="App Name Ascending"
+        />
+ 
+    <item
+        android:id="@+id/arr_appName_descend"
+        android:title="App Name Descending"
+    />
+    
+</menu>
