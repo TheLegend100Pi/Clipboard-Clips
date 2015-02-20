@@ -64,7 +64,7 @@ case R.id.action_copy_this:
 	ClipboardManager clipBoard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 	  ClipData clipToCopy = ClipData.newPlainText("clipToCopy", receive.clip);
 	  clipBoard.setPrimaryClip(clipToCopy);
-	  db.updateClipcount(receive.ind,receive.clip,receive.dateTime,receive.appName,(receive.copyCount+1));
+	  db.updateClipcount("clips",receive.ind,receive.clip,receive.dateTime,receive.appName,(receive.copyCount+1));
 	   return true;
 case R.id.action_delete_this:
 	new AlertDialog.Builder(this)
@@ -74,7 +74,7 @@ case R.id.action_delete_this:
         @Override
 		public void onClick(DialogInterface dialog, int which) { 
             // continue with delete
-        	db.deleteClip(Integer.parseInt(receive.ind));
+        	db.deleteClip("clips",Integer.parseInt(receive.ind));
             finish();
           //  Toast.makeText(this, "All Clips Deleted", Toast.LENGTH_LONG).show();
         }

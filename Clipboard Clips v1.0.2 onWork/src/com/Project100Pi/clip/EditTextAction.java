@@ -21,7 +21,7 @@ public class EditTextAction extends Activity
     String prev="";
     String curr="";
     MyDB db = new MyDB(this);
-    ClipObject receive;
+    ClipObject receive = null;
     RelativeLayout relLayout2 = null;
     private String getDateTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat(
@@ -42,9 +42,16 @@ public class EditTextAction extends Activity
       Button b2= (Button) findViewById(R.id.button2);
       relLayout2 = (RelativeLayout) findViewById(R.id.editTextAction);
 		relLayout2.setBackgroundColor(Color.parseColor("#1c1c1c"));
-      receive = (getIntent().getExtras().getParcelable("id"));
-      prev=receive.clip;
-      e.setText(receive.clip);
+		try{
+	   receive = (getIntent().getExtras().getParcelable("id"));
+		}catch(NullPointerException a){
+			a.printStackTrace();
+		}
+	   if(receive != null){
+		   prev=receive.clip;
+		   e.setText(receive.clip);   
+	   }
+     
       
       b1.setOnClickListener(new OnClickListener() {
     	  	 
@@ -52,8 +59,14 @@ public class EditTextAction extends Activity
     	public void onClick(View view) {
     		 EditText e =(EditText) findViewById(R.id.editText1);
     		curr=e.getText().toString();
-        	if(!(curr.equals(prev))){
-        		db.updateClip(receive.ind, curr,getDateTime(),receive.appName,receive.copyCount );
+    		if(receive == null){
+    			db.insertClip("myClips",curr,getDateTime(),"My Notes");
+    			Intent returnIntent = new Intent();
+            	returnIntent.putExtra("result",curr);
+            	setResult(RESULT_OK,returnIntent);	
+    			finish();
+    		}else if(!(curr.equals(prev))){
+        		db.updateClip("clips",receive.ind, curr,getDateTime(),receive.appName,receive.copyCount );
         		Intent returnIntent = new Intent();
             	returnIntent.putExtra("result",curr);
             	setResult(RESULT_OK,returnIntent);	

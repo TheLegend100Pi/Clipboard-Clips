@@ -69,7 +69,7 @@ public class MyService extends Service {
     	   final String curr = readFromClipboard(getBaseContext());
     	   ;
     	   if((!(curr.trim().equals("")))&&(!(curr.equals(null))) &&(!(curr.equals(""))) && !(curr.equals(prev))){
-    		   clips = db.getAllClips();
+    		   clips = db.getAllClips("clips");
     		   for (ClipObject i : clips) {
     				 if(i.clip.equals(curr)){
     					 Handler handler = new Handler(Looper.getMainLooper());
@@ -103,7 +103,7 @@ public class MyService extends Service {
     		           }
     		       });	   
     	   
-    	   db.insertClip(curr,getDateTime(),appName);
+    	   db.insertClip("clips",curr,getDateTime(),appName);
     	   prev=curr;
     	   }
           // do something useful here with the clipboard
