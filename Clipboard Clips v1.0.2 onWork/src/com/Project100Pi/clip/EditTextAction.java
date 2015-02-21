@@ -22,6 +22,7 @@ public class EditTextAction extends Activity
     String curr="";
     MyDB db = new MyDB(this);
     ClipObject receive = null;
+    String tableName;
     RelativeLayout relLayout2 = null;
     private String getDateTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat(
@@ -44,6 +45,7 @@ public class EditTextAction extends Activity
 		relLayout2.setBackgroundColor(Color.parseColor("#1c1c1c"));
 		try{
 	   receive = (getIntent().getExtras().getParcelable("id"));
+	   tableName = getIntent().getExtras().getString("tableName");
 		}catch(NullPointerException a){
 			a.printStackTrace();
 		}
@@ -66,7 +68,7 @@ public class EditTextAction extends Activity
             	setResult(RESULT_OK,returnIntent);	
     			finish();
     		}else if(!(curr.equals(prev))){
-        		db.updateClip("clips",receive.ind, curr,getDateTime(),receive.appName,receive.copyCount );
+        		db.updateClip(tableName,receive.ind, curr,getDateTime(),receive.appName,receive.copyCount );
         		Intent returnIntent = new Intent();
             	returnIntent.putExtra("result",curr);
             	setResult(RESULT_OK,returnIntent);	

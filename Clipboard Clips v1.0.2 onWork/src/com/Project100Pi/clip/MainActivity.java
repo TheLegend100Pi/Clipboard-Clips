@@ -10,6 +10,7 @@ import java.util.List;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.a;
+import com.google.android.gms.internal.dr;
 import com.twotoasters.jazzylistview.JazzyHelper;
 import com.twotoasters.jazzylistview.JazzyListView;
 
@@ -84,11 +85,20 @@ public class MainActivity extends Activity {
 	 int multiSelectionOn = 0;
 	 int drawerShow = 0;
 	 int drawerSelectPosition = 0;
+	 String currentClipView = "clips";
 
 
 	public void showListData(String tableName){
-		clips = db.getAllClips(tableName);  
+		currentClipView = tableName;
+		clips = db.getAllClips(tableName); 
 		if(clips.isEmpty()){
+			list.clear();
+			try{
+			sa.notifyDataSetChanged();
+			}catch(NullPointerException e)
+			{
+				e.printStackTrace();
+			}
 		 emptyTextView.setVisibility(View.VISIBLE);    
 		 emptyTextView1.setVisibility(View.VISIBLE);
 			return;
@@ -133,8 +143,8 @@ public class MainActivity extends Activity {
 	                @Override
 					public void onClick(DialogInterface dialog, int which) { 
 	                    // continue with delete
-	                	db.deleteTable("clips");
-	                	showListData("clips");
+	                	db.deleteTable(currentClipView);
+	                	showListData(currentClipView);
 	    	            refreshScreen();
 	    	          //  Toast.makeText(this, "All Clips Deleted", Toast.LENGTH_LONG).show();
 	                }
@@ -199,7 +209,7 @@ public class MainActivity extends Activity {
 
 	public void refreshScreen(){
 		list.clear();
-		showListData("clips");
+		showListData(currentClipView);
 		if(!clips.isEmpty()){
 			myListView.setVisibility(View.VISIBLE);
 		myListView.setAdapter(sa);
@@ -249,7 +259,11 @@ public class MainActivity extends Activity {
 //		 final MyDB db = new MyDB(this);
 	   
 		overridePendingTransition(R.animator.activity_open_translate,R.animator.activity_close_scale);
-		getActionBar().setTitle("Clips");
+		if(currentClipView.equals("clips")){
+		getActionBar().setTitle("Clipboard Clips");
+		}else if(currentClipView.equals("myClips")){
+			getActionBar().setTitle("My Clips");	
+		}
 	    setContentView(R.layout.activity_main);
 	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 	       arrangement = sharedPreferences.getInt("arrangement", 0);
@@ -262,9 +276,11 @@ public class MainActivity extends Activity {
 		startService(new Intent(this, MyService.class));
 		
 		getActionBar().setDisplayHomeAsUpEnabled(true); 
+		FloatingActionButton mFab = (FloatingActionButton)findViewById(R.id.fab);
+		mFab.attachToListView(myListView);
 		
-	    mNavItems.add(new NavItem("Clipboard", "Clips", R.drawable.ic_action_home));
-	    mNavItems.add(new NavItem("My", " Clips", R.drawable.ic_action_settings));
+		mNavItems.add(new NavItem("Clipboard", "Clips", R.drawable.clipboard_icon));
+	    mNavItems.add(new NavItem("My Clips", " Notes", R.drawable.notes_icon2));
 	    mNavItems.add(new NavItem("About", "Get to know about us", R.drawable.ic_action_about));
 	 
 	    // DrawerLayout
@@ -300,9 +316,11 @@ public class MainActivity extends Activity {
 	            invalidateOptionsMenu();
 	            switch (drawerSelectPosition) {
 	    		case 0:
-	    			
+	    			getActionBar().setTitle("Clipboard Clips");
+	    			showListData("clips");
 	    			break;
 	    		case 1:
+	    			getActionBar().setTitle("My Clips");
 	    			showListData("myClips");
 	    			break;
 	    		case 2:
@@ -310,13 +328,14 @@ public class MainActivity extends Activity {
 	                startActivity(intent);
 	    		break;
 	    		default:
+	    			
 	    			break;
 	            }
 	        }
 	    };
 	     
 	    mDrawerLayout.setDrawerListener(mDrawerToggle);
-		showListData("clips");	
+		showListData(currentClipView);
 		
 		myListView.setChoiceMode(JazzyListView.CHOICE_MODE_MULTIPLE_MODAL);
 		myListView.setMultiChoiceModeListener(new MultiChoiceModeListener() {
@@ -358,7 +377,7 @@ public class MainActivity extends Activity {
 						public void onClick(DialogInterface dialog, int which) { 
 	        	            // continue with delete
 	        	        	for (ClipObject current : clipsSelected) {
-	        	        		db.deleteClip("clips",Integer.parseInt(current.ind));
+	        	        		db.deleteClip(currentClipView,Integer.parseInt(current.ind));
 	        	        	}
 	        	        	
 	        	        	Toast.makeText(getApplicationContext(),selectCount+" clip(s) deleted", Toast.LENGTH_LONG).show();
@@ -431,14 +450,15 @@ public class MainActivity extends Activity {
 		        	ClipObject send = clips.get(position);
 		            Intent intent = new Intent(MainActivity.this,ShowListItem.class);
 		            intent.putExtra("id", send);
+		            intent.putExtra("tableName", currentClipView);
 		            startActivity(intent);
 
 		        }
 
 		    });
 		    
-		ImageButton newClip = (ImageButton) findViewById(R.id.fab); 
-		newClip.setOnClickListener(new OnClickListener() {
+		//ImageButton newClip = (ImageButton) findViewById(R.id.ImageButton1); 
+		mFab.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
             	
             	Intent intent = new Intent(MainActivity.this,EditTextAction.class);
@@ -578,13 +598,14 @@ public class MainActivity extends Activity {
 	            			    	  ClipboardManager clipBoard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 	            			    	  ClipData clipToCopy = ClipData.newPlainText("clipToCopy", send.clip);
 	            			    	  clipBoard.setPrimaryClip(clipToCopy);
-	            			    	  db.updateClipcount("clips",send.ind,send.clip,send.dateTime,send.appName,(send.copyCount+1));
+	            			    	  db.updateClipcount(currentClipView,send.ind,send.clip,send.dateTime,send.appName,(send.copyCount+1));
 	            			    	   break;
 	            			           case R.id.cnt_mnu_edit:
 	            			               //Toast.makeText(this, "Edit :" , Toast.LENGTH_SHORT).show();
 	            			        	    state = myListView.onSaveInstanceState();
 	            				            Intent intent = new Intent(MainActivity.this,EditTextAction.class);
 	            				            intent.putExtra("id", send);
+	            				            intent.putExtra("tableName", currentClipView);
 	            				            startActivity(intent);
 	            			               break;
 	            			           case R.id.cnt_mnu_delete:
@@ -595,7 +616,7 @@ public class MainActivity extends Activity {
 	            			        	        @Override
 	            								public void onClick(DialogInterface dialog, int which) { 
 	            			        	            // continue with delete
-	            			        	        	db.deleteClip("clips",index);
+	            			        	        	db.deleteClip(currentClipView,index);
 	            			        	        	refreshScreen();
 	            			        	        	//showListData();
 	            			        	        	//Toast.makeText(this, "Clip Deleted" , Toast.LENGTH_SHORT).show();
@@ -621,7 +642,7 @@ public class MainActivity extends Activity {
 
 	            			       }
 	            			       refreshScreen();
-	            			       showListData("clips");
+	            			       showListData(currentClipView);
 	            			       return true;
 	            				
 	            			}
@@ -640,6 +661,7 @@ public class MainActivity extends Activity {
 		
 		myListView.setAdapter( sa );
 	     myListView.setTransitionEffect(JazzyHelper.SLIDE_IN);
+	     myListView.setVisibility(View.VISIBLE);
 	
 	
 	}
@@ -688,6 +710,11 @@ public class MainActivity extends Activity {
 	protected void onRestart(){
 		super.onRestart();
 		// setContentView(R.layout.activity_main);
+		if(currentClipView.equals("clips")){
+			drawerSelectPosition = 0;
+		}else if(currentClipView.equals("myClips")) {
+			drawerSelectPosition=1;
+		}
 		refreshScreen();
 		// Set new items
 		myListView.setAdapter(sa);

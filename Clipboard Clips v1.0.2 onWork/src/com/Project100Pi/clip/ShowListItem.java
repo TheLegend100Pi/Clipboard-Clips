@@ -3,10 +3,6 @@ package com.Project100Pi.clip;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
-import com.Project100Pi.clip.R.layout;
-
-import android.R.integer;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -32,6 +28,7 @@ public class ShowListItem extends Activity
     ClipObject receive;
     MyDB db = new MyDB(this);
     Intent mShareIntent=new Intent();
+    String tableName;
     private String getDateTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat(
                 "dd.MM.yyyy  hh:mm:ss a", Locale.getDefault());
@@ -64,7 +61,7 @@ case R.id.action_copy_this:
 	ClipboardManager clipBoard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 	  ClipData clipToCopy = ClipData.newPlainText("clipToCopy", receive.clip);
 	  clipBoard.setPrimaryClip(clipToCopy);
-	  db.updateClipcount("clips",receive.ind,receive.clip,receive.dateTime,receive.appName,(receive.copyCount+1));
+	  db.updateClipcount(tableName,receive.ind,receive.clip,receive.dateTime,receive.appName,(receive.copyCount+1));
 	   return true;
 case R.id.action_delete_this:
 	new AlertDialog.Builder(this)
@@ -74,7 +71,7 @@ case R.id.action_delete_this:
         @Override
 		public void onClick(DialogInterface dialog, int which) { 
             // continue with delete
-        	db.deleteClip("clips",Integer.parseInt(receive.ind));
+        	db.deleteClip(tableName,Integer.parseInt(receive.ind));
             finish();
           //  Toast.makeText(this, "All Clips Deleted", Toast.LENGTH_LONG).show();
         }
@@ -92,6 +89,7 @@ case R.id.action_delete_this:
 case R.id.action_edit_this:
 	 Intent intent = new Intent(ShowListItem.this,EditTextAction.class);
      intent.putExtra("id", receive);
+     intent.putExtra("tableName", tableName);
      startActivityForResult(intent,1);
    return true;
 case android.R.id.home:
@@ -144,6 +142,8 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	  Typeface font = Typeface.createFromAsset(getBaseContext().getAssets(), "fonts/Exo-Italic.otf");
 	  line1. setTypeface(font);
       receive = (getIntent().getExtras().getParcelable("id"));
+      tableName = (getIntent().getExtras().getString("tableName"));
+
       //line1.setMovementMethod(LinkMovementMethod.getInstance());
       line1.setText(receive.clip);
       line2.setText(receive.dateTime);
@@ -167,6 +167,7 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	        	 if (line1.getSelectionStart() == -1 && line1.getSelectionEnd() == -1) {
 	        	Intent intent = new Intent(ShowListItem.this,EditTextAction.class);
 	            intent.putExtra("id", receive);
+	            intent.putExtra("tableName", tableName);
 	            startActivityForResult(intent,1);
 	        }
 	        }
