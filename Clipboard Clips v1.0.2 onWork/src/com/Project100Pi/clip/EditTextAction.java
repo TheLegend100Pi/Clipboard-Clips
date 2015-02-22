@@ -37,7 +37,7 @@ public class EditTextAction extends Activity
       super.onCreate(savedInstanceState);
       setContentView(R.layout.edit_text_action);
 	   overridePendingTransition(R.animator.activity_open_translate,R.animator.activity_close_scale);
-	    getActionBar().setTitle("Clip Edit");
+	    getActionBar().setTitle("Edit");
       EditText e =(EditText) findViewById(R.id.editText1);
       Button b1= (Button) findViewById(R.id.button1);
       Button b2= (Button) findViewById(R.id.button2);

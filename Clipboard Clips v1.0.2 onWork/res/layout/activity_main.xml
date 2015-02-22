@@ -13,7 +13,7 @@
         android:id="@+id/mainContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#4c4c4c"
+        android:background="#2f2f2f"
         android:gravity="bottom"
         tools:context="com.Project100Pi.clip.MainActivity" >
 

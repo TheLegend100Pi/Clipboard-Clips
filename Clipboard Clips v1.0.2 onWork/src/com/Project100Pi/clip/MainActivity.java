@@ -7,24 +7,21 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
+import com.Project100Pi.clip.targets.ActionViewTarget;
+import com.Project100Pi.clip.targets.ViewTarget;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.a;
-import com.google.android.gms.internal.dr;
 import com.twotoasters.jazzylistview.JazzyHelper;
 import com.twotoasters.jazzylistview.JazzyListView;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
@@ -47,7 +44,6 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.PopupMenu;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -86,6 +82,22 @@ public class MainActivity extends Activity {
 	 int drawerShow = 0;
 	 int drawerSelectPosition = 0;
 	 String currentClipView = "clips";
+	 
+	 // All Static variables
+	    // Database Version
+	    private static final int DATABASE_VERSION = 1;
+	 
+	    // Database Name
+	    private static final String DATABASE_NAME = "clipManager";
+	 
+	    // Contacts table name
+	    private static final String TABLE = "clips";
+	    
+	    private static final String MY_TABLE = "myClips";
+	 
+	    // Contacts Table Columns names
+	    private static final String KEY_ID = "id";
+	    private static final String KEY_NAME = "clip";
 
 
 	public void showListData(String tableName){
@@ -164,9 +176,6 @@ public class MainActivity extends Activity {
 	        	View view = findViewById(R.id.action_arrange);
 	        	showMenu(item,view);
 	        	return true;
-	        case  R.id.action_about:
-	        	Intent intent = new Intent(MainActivity.this,AboutActivity.class);
-	            startActivity(intent);
 
 	        default:
 	            return super.onOptionsItemSelected(item);
@@ -256,17 +265,18 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 	       // String pastedata;
-//		 final MyDB db = new MyDB(this);
+			db = new MyDB(this);
 	   
 		overridePendingTransition(R.animator.activity_open_translate,R.animator.activity_close_scale);
-		if(currentClipView.equals("clips")){
-		getActionBar().setTitle("Clipboard Clips");
-		}else if(currentClipView.equals("myClips")){
-			getActionBar().setTitle("My Clips");	
-		}
 	    setContentView(R.layout.activity_main);
 	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 	       arrangement = sharedPreferences.getInt("arrangement", 0);
+	       currentClipView = sharedPreferences.getString("currentClipView", "clips");
+	       if(currentClipView.equals("clips")){
+	   		getActionBar().setTitle("Clipboard Clips");
+	   		}else if(currentClipView.equals("myClips")){
+	   			getActionBar().setTitle("My Notes");	
+	   		}
 	    emptyTextView = (MyTextView) findViewById(R.id.emptyView);
 	    emptyTextView1 = (MyTextView) findViewById(R.id.emptyView1);
 	     relLayout = (RelativeLayout) findViewById(R.layout.activity_main);
@@ -277,10 +287,10 @@ public class MainActivity extends Activity {
 		
 		getActionBar().setDisplayHomeAsUpEnabled(true); 
 		FloatingActionButton mFab = (FloatingActionButton)findViewById(R.id.fab);
-		mFab.attachToListView(myListView);
+		//mFab.attachToListView(myListView);
 		
 		mNavItems.add(new NavItem("Clipboard", "Clips", R.drawable.clipboard_icon));
-	    mNavItems.add(new NavItem("My Clips", " Notes", R.drawable.notes_icon2));
+	    mNavItems.add(new NavItem("My Notes", " Clips", R.drawable.notes_icon2));
 	    mNavItems.add(new NavItem("About", "Get to know about us", R.drawable.ic_action_about));
 	 
 	    // DrawerLayout
@@ -320,7 +330,7 @@ public class MainActivity extends Activity {
 	    			showListData("clips");
 	    			break;
 	    		case 1:
-	    			getActionBar().setTitle("My Clips");
+	    			getActionBar().setTitle("My Notes");
 	    			showListData("myClips");
 	    			break;
 	    		case 2:
@@ -479,7 +489,14 @@ public class MainActivity extends Activity {
 		
 	ImageView homebutton = (ImageView) findViewById(android.R.id.home);
 	homebutton.setPadding(30, 0, 0, 0);
-
+	ViewTarget target = new ViewTarget(R.id.fab, this);
+	new ShowcaseView.Builder(this)
+	.setTarget(target)
+    .setContentTitle("Add Clip")
+    .setContentText("You can add your new note anytime by touching this button.")
+    .hideOnTouchOutside()
+    .setStyle(R.style.ShowcaseView)
+    .build();
 		 	  }
    
 	@Override
@@ -673,11 +690,11 @@ public class MainActivity extends Activity {
 	    	lastVisiblePosition= myListView.getLastVisiblePosition();
 	    	if(lastVisiblePosition == myListView.getCount() - 1 && myListView.getChildAt(lastVisiblePosition).getBottom() <= myListView.getHeight()) {
 	            // It fits!
-	        	relLayout.setBackgroundColor(Color.parseColor("#888888"));
+	        	relLayout.setBackgroundColor(Color.parseColor("#4c4c4c"));
 	        }
 	        else {
 	            // It doesn't fit...
-	        	relLayout.setBackgroundColor(Color.parseColor("#777777"));
+	        	relLayout.setBackgroundColor(Color.parseColor("#4c4c4c"));
 
 	        }
 	    	}
@@ -704,6 +721,7 @@ public class MainActivity extends Activity {
 	SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     SharedPreferences.Editor editor = sharedPreferences.edit();
     editor.putInt("arrangement", arrangement);
+    editor.putString("currentClipView", currentClipView);
     editor.commit();
 	}
 	@Override
