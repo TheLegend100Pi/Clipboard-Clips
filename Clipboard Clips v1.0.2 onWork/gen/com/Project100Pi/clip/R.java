@@ -2818,6 +2818,8 @@ containing a value of this type.
     
          */
         public static final int Base_Widget_AppCompat_Toolbar_Button_Navigation=0x7f070095;
+        public static final int MyShowcaseView=0x7f0700f6;
+        public static final int MyShowcaseView1=0x7f0700f7;
         public static final int Platform_AppCompat=0x7f0700ce;
         public static final int Platform_AppCompat_Dialog=0x7f0700d0;
         public static final int Platform_AppCompat_Light=0x7f0700cf;
@@ -2880,10 +2882,10 @@ containing a value of this type.
         public static final int TextAppearance_AppCompat_Widget_PopupMenu_Large=0x7f07002c;
         public static final int TextAppearance_AppCompat_Widget_PopupMenu_Small=0x7f07002d;
         public static final int TextAppearance_AppCompat_Widget_Switch=0x7f070053;
-        public static final int TextAppearance_ShowcaseView_Detail=0x7f0700f7;
-        public static final int TextAppearance_ShowcaseView_Detail_Light=0x7f0700f8;
-        public static final int TextAppearance_ShowcaseView_Title=0x7f0700f6;
-        public static final int TextAppearance_ShowcaseView_Title_Light=0x7f0700f9;
+        public static final int TextAppearance_ShowcaseView_Detail=0x7f0700f9;
+        public static final int TextAppearance_ShowcaseView_Detail_Light=0x7f0700fa;
+        public static final int TextAppearance_ShowcaseView_Title=0x7f0700f8;
+        public static final int TextAppearance_ShowcaseView_Title_Light=0x7f0700fb;
         public static final int TextAppearance_Widget_AppCompat_ExpandedMenu_Item=0x7f070024;
         public static final int TextAppearance_Widget_AppCompat_Toolbar_Subtitle=0x7f07003c;
         public static final int TextAppearance_Widget_AppCompat_Toolbar_Title=0x7f07003b;

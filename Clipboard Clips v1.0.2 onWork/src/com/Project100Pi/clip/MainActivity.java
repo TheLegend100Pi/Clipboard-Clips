@@ -7,7 +7,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-import com.Project100Pi.clip.targets.ActionViewTarget;
+
+
+
+
 import com.Project100Pi.clip.targets.ViewTarget;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -29,6 +32,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
 import android.view.ActionMode;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -38,6 +42,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView.MultiChoiceModeListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -59,6 +64,7 @@ public class MainActivity extends Activity {
 	ArrayList<NavItem> mNavItems = new ArrayList<NavItem>();
 		private JazzyListView myListView;
 		MyDB db = new MyDB(this);
+		Tutorial tutorial = new Tutorial();
 		String full="";
 		private SimpleAdapter sa;
 		Parcelable state = null;
@@ -82,6 +88,9 @@ public class MainActivity extends Activity {
 	 int drawerShow = 0;
 	 int drawerSelectPosition = 0;
 	 String currentClipView = "clips";
+	 ShowcaseView sc;
+	 int step=0;
+	 int firstTime = 1;
 	 
 	 // All Static variables
 	    // Database Version
@@ -489,15 +498,51 @@ public class MainActivity extends Activity {
 		
 	ImageView homebutton = (ImageView) findViewById(android.R.id.home);
 	homebutton.setPadding(30, 0, 0, 0);
-	ViewTarget target = new ViewTarget(R.id.fab, this);
-	new ShowcaseView.Builder(this)
-	.setTarget(target)
-    .setContentTitle("Add Clip")
-    .setContentText("You can add your new note anytime by touching this button.")
+	if(firstTime == 1){
+		step=0;
+	sc = new ShowcaseView.Builder(this)
+    .setContentTitle("\nClipboard Clips")
+    .setContentText("\nYou can copy text from any application and it will get stored as a clip.\nTouch 'Next' to continue.")
     .hideOnTouchOutside()
-    .setStyle(R.style.ShowcaseView)
+    .setStyle(R.style.MyShowcaseView)
     .build();
-		 	  }
+	sc.setGravity(Gravity.RIGHT);
+	final Button showCaseButton = (Button) findViewById(R.id.showcase_button);
+	
+	 showCaseButton.setOnClickListener(new OnClickListener() {
+	  	 
+	    	@Override
+	    	public void onClick(View view) {
+	    		
+	    		if (step == 0){
+	    		sc.hide();
+	    		ViewTarget target = new ViewTarget(R.id.fab,MainActivity.this);
+	    		sc = new ShowcaseView.Builder(MainActivity.this)
+	    		.setTarget(target)
+	    	    .setContentTitle("\n\nAdd New Clip")
+	    	    .setContentText("\nYou can add your own Note anytime by touching the '+' button .\nTouch 'Next' to continue.")
+	    	    .hideOnTouchOutside()
+	    	    .setStyle(R.style.MyShowcaseView)
+	    	    .build();
+	    		sc.setGravity(Gravity.LEFT);
+	    		step =1;
+	    		}else{  	 
+	    	    		mDrawerLayout.openDrawer(mDrawerPane);
+	    	    		sc.hide();
+	    	    		 ViewTarget target = new ViewTarget(R.id.fab,MainActivity.this);
+	    	    		sc = new ShowcaseView.Builder(MainActivity.this)
+	    	    		.setTarget(target)
+	    	    	    .setContentTitle("\n\nMy Notes")
+	    	    	    .setContentText("\nYou can view your notes by touching the 'My Notes'.")
+	    	    	    .hideOnTouchOutside()
+	    	    	    .setStyle(R.style.MyShowcaseView)
+	    	    	    .build();
+	    	    		sc.setGravity(Gravity.RIGHT);
+	    		}
+	    	    	}
+	    	});
+	    	}
+	}
    
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
