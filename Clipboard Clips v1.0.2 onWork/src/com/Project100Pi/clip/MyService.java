@@ -39,6 +39,7 @@ public class MyService extends Service {
 	String appName="";
 	MyDB db = new MyDB(this);
 	  List<ClipObject> clips;
+	  int notificationToast = 1;
 	
 	private String getDateTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat(
@@ -59,6 +60,8 @@ public class MyService extends Service {
 			
        final ClipboardManager clipBoard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
         clipBoard.addPrimaryClipChangedListener( new ClipboardListener() );
+ 
+        
          }
 	
     class ClipboardListener implements ClipboardManager.OnPrimaryClipChangedListener
@@ -72,6 +75,7 @@ public class MyService extends Service {
     		   clips = db.getAllClips("clips");
     		   for (ClipObject i : clips) {
     				 if(i.clip.equals(curr)){
+    					 if(notificationToast == 1) {
     					 Handler handler = new Handler(Looper.getMainLooper());
 
     		    		   handler.post(new Runnable() {
@@ -79,10 +83,19 @@ public class MyService extends Service {
     		    		           @Override
     		    		           public void run() {
     		    		               //Your UI code here
-    		    		        	   Toast.makeText(getApplicationContext(), "You have copied \""+curr+"\" to the Clipboard", Toast.LENGTH_LONG).show();
+    		    		     
+    		    		        	   final Toast toast = Toast.makeText(getApplicationContext(), "You have copied \""+curr+"\" to the Clipboard",Toast.LENGTH_SHORT);
+    		    		        	   toast.show();
+    		    		        	   Handler handler = new Handler();
+    		    		               handler.postDelayed(new Runnable() {
+    		    		                  @Override
+    		    		                  public void run() {
+    		    		                      toast.cancel(); 
+    		    		                  }
+    		    		           }, 1000);
     		    		           }
     		    		       });	   
-    		    	   
+    					 }
     					 return;
     				 }
     						}
@@ -92,6 +105,7 @@ public class MyService extends Service {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+    		   if(notificationToast == 1){
     		   Handler handler = new Handler(Looper.getMainLooper());
 
     		   handler.post(new Runnable() {
@@ -99,10 +113,18 @@ public class MyService extends Service {
     		           @Override
     		           public void run() {
     		               //Your UI code here
-    		        	   Toast.makeText(getApplicationContext(), "You have copied \""+curr+"\" from "+appName, Toast.LENGTH_LONG).show();
+   		        	   final Toast toast = Toast.makeText(getApplicationContext(), "You have copied \""+curr+"\" from "+appName, Toast.LENGTH_SHORT);
+    		        	   toast.show();
+    		        	   Handler handler = new Handler();
+    		               handler.postDelayed(new Runnable() {
+    		                  @Override
+    		                  public void run() {
+    		                      toast.cancel(); 
+    		                  }
+    		           }, 1000);
     		           }
     		       });	   
-    	   
+    		   }
     	   db.insertClip("clips",curr,getDateTime(),appName);
     	   prev=curr;
     	   }
@@ -268,6 +290,11 @@ public class MyService extends Service {
 			    
 		       });
 	  */
+		try{
+		notificationToast = intent.getExtras().getInt("notificationToast");
+		}catch(NullPointerException e){
+			e.printStackTrace();
+		}
 		return START_STICKY;
 
     }

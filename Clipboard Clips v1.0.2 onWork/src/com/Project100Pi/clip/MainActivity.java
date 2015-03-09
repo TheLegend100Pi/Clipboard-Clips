@@ -7,13 +7,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-
-
-
-
 import com.Project100Pi.clip.targets.ViewTarget;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.tagmanager.Container.FunctionCallMacroCallback;
 import com.twotoasters.jazzylistview.JazzyHelper;
 import com.twotoasters.jazzylistview.JazzyListView;
 
@@ -26,10 +23,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.Gravity;
@@ -52,7 +51,7 @@ import android.widget.PopupMenu;
 import android.widget.Toast;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity{
 	
 	private static String TAG = MainActivity.class.getSimpleName();
 	 
@@ -64,7 +63,6 @@ public class MainActivity extends Activity {
 	ArrayList<NavItem> mNavItems = new ArrayList<NavItem>();
 		private JazzyListView myListView;
 		MyDB db = new MyDB(this);
-		Tutorial tutorial = new Tutorial();
 		String full="";
 		private SimpleAdapter sa;
 		Parcelable state = null;
@@ -91,22 +89,13 @@ public class MainActivity extends Activity {
 	 ShowcaseView sc;
 	 int step=0;
 	 int firstTime = 1;
+	 Button showCaseButton = null;
+	  MultiChoiceModeListener multi = null;
+	  float scale = 1;
+	  int notificationToast = 1;
+	   DrawerListAdapter adapter =null;
 	 
-	 // All Static variables
-	    // Database Version
-	    private static final int DATABASE_VERSION = 1;
-	 
-	    // Database Name
-	    private static final String DATABASE_NAME = "clipManager";
-	 
-	    // Contacts table name
-	    private static final String TABLE = "clips";
-	    
-	    private static final String MY_TABLE = "myClips";
-	 
-	    // Contacts Table Columns names
-	    private static final String KEY_ID = "id";
-	    private static final String KEY_NAME = "clip";
+
 
 
 	public void showListData(String tableName){
@@ -185,7 +174,7 @@ public class MainActivity extends Activity {
 	        	View view = findViewById(R.id.action_arrange);
 	        	showMenu(item,view);
 	        	return true;
-
+	   
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
@@ -280,35 +269,50 @@ public class MainActivity extends Activity {
 	    setContentView(R.layout.activity_main);
 	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 	       arrangement = sharedPreferences.getInt("arrangement", 0);
+	       firstTime = sharedPreferences.getInt("firstTime", 1);
 	       currentClipView = sharedPreferences.getString("currentClipView", "clips");
 	       if(currentClipView.equals("clips")){
 	   		getActionBar().setTitle("Clipboard Clips");
+	   		drawerSelectPosition = 0;
 	   		}else if(currentClipView.equals("myClips")){
-	   			getActionBar().setTitle("My Notes");	
+	   			getActionBar().setTitle("My Notes");
+	   			drawerSelectPosition=1;
 	   		}
+	      notificationToast = sharedPreferences.getInt("notificationToast", 1); 
 	    emptyTextView = (MyTextView) findViewById(R.id.emptyView);
 	    emptyTextView1 = (MyTextView) findViewById(R.id.emptyView1);
 	     relLayout = (RelativeLayout) findViewById(R.layout.activity_main);
 		myListView = (JazzyListView) findViewById(R.id.jazzyListView1);
 		registerForContextMenu(myListView);
 		myListView.setDivider(null);
-		startService(new Intent(this, MyService.class));
+		Intent intent = new Intent(MainActivity.this,MyService.class);
+        intent.putExtra("notificationToast", notificationToast);
+		startService(intent);
 		
 		getActionBar().setDisplayHomeAsUpEnabled(true); 
 		FloatingActionButton mFab = (FloatingActionButton)findViewById(R.id.fab);
 		//mFab.attachToListView(myListView);
 		
+		DisplayMetrics metrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		scale = metrics.density;
+		
 		mNavItems.add(new NavItem("Clipboard", "Clips", R.drawable.clipboard_icon));
 	    mNavItems.add(new NavItem("My Notes", " Clips", R.drawable.notes_icon2));
+	    mNavItems.add(new NavItem("Tutorial", "Again", R.drawable.action_help));
+	    if(notificationToast == 1){
+	    	 mNavItems.add(new NavItem("Turn Notification Toast", "OFF", R.drawable.icon_notify));	
+	    }else if(notificationToast == 0){
+	    	mNavItems.add(new NavItem("Turn Notification Toast", "ON", R.drawable.icon_notify));
+	    }
 	    mNavItems.add(new NavItem("About", "Get to know about us", R.drawable.ic_action_about));
-	 
 	    // DrawerLayout
 	    mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
 	 
 	    // Populate the Navigtion Drawer with options
 	    mDrawerPane = (RelativeLayout) findViewById(R.id.drawerPane);
 	    mDrawerList = (ListView) findViewById(R.id.navList);
-	    DrawerListAdapter adapter = new DrawerListAdapter(this, mNavItems);
+	     adapter = new DrawerListAdapter(this, mNavItems);
 	    mDrawerList.setAdapter(adapter);
 	 
 	    // Drawer Item click listeners
@@ -343,6 +347,38 @@ public class MainActivity extends Activity {
 	    			showListData("myClips");
 	    			break;
 	    		case 2:
+	    			fullTutorialOne();
+	    			break;
+	    		case 3:
+	    			if(notificationToast == 0){
+		        		notificationToast = 1;
+		        		mNavItems.set(3, new NavItem("Turn Notification Toast", "OFF", R.drawable.icon_notify));
+		        		final Toast toast = Toast.makeText(getApplicationContext(),"Notification Toast Turned ON",Toast.LENGTH_SHORT);
+ 		        	   toast.show();
+ 		        	   Handler handler = new Handler();
+ 		               handler.postDelayed(new Runnable() {
+ 		                  @Override
+ 		                  public void run() {
+ 		                      toast.cancel(); 
+ 		                  }
+ 		           }, 1000);
+		        	} else if(notificationToast == 1){
+		        		notificationToast = 0;
+		        		mNavItems.set(3, new NavItem("Turn Notification Toast", "ON", R.drawable.icon_notify));
+		        	}
+	    			mDrawerList.setAdapter(adapter);
+	    			adapter.notifyDataSetChanged();
+	    			savePreference();
+	    			if(currentClipView.equals("clips")){
+	    				drawerSelectPosition = 0;
+	    			}else if(currentClipView.equals("myClips")) {
+	    				drawerSelectPosition=1;
+	    			}
+	    			Intent intent1 = new Intent(MainActivity.this,MyService.class);
+	    	        intent1.putExtra("notificationToast", notificationToast);
+	    			startService(intent1);
+	    			break;
+	    		case 4:
 	    			Intent intent = new Intent(MainActivity.this,AboutActivity.class);
 	                startActivity(intent);
 	    		break;
@@ -357,7 +393,8 @@ public class MainActivity extends Activity {
 		showListData(currentClipView);
 		
 		myListView.setChoiceMode(JazzyListView.CHOICE_MODE_MULTIPLE_MODAL);
-		myListView.setMultiChoiceModeListener(new MultiChoiceModeListener() {
+
+		 multi = new MultiChoiceModeListener() {
 			
 			@Override
 			public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
@@ -379,7 +416,6 @@ public class MainActivity extends Activity {
 				// TODO Auto-generated method stub
 				MenuInflater inflater1 = mode.getMenuInflater(); 
 				inflater1.inflate(R.menu.my_context_menu, menu);
-				
 				return true;
 			}
 			
@@ -399,7 +435,15 @@ public class MainActivity extends Activity {
 	        	        		db.deleteClip(currentClipView,Integer.parseInt(current.ind));
 	        	        	}
 	        	        	
-	        	        	Toast.makeText(getApplicationContext(),selectCount+" clip(s) deleted", Toast.LENGTH_LONG).show();
+	        	        	 final Toast toast = Toast.makeText(getApplicationContext(),selectCount+" clip(s) deleted",Toast.LENGTH_SHORT);
+	    		        	   toast.show();
+	    		        	   Handler handler = new Handler();
+	    		               handler.postDelayed(new Runnable() {
+	    		                  @Override
+	    		                  public void run() {
+	    		                      toast.cancel(); 
+	    		                  }
+	    		           }, 1000);
 	        	        	mode.finish();
 	        	        	refreshScreen();
 	        	        	selectCount=0;
@@ -453,7 +497,8 @@ public class MainActivity extends Activity {
 			}	
 				
 			}
-		} );
+		} ;
+				  myListView.setMultiChoiceModeListener( multi );
 		myListView.post(fitsOnScreen) ; 
 		
 		    myListView.setOnItemClickListener(new OnItemClickListener() {
@@ -498,50 +543,12 @@ public class MainActivity extends Activity {
 		
 	ImageView homebutton = (ImageView) findViewById(android.R.id.home);
 	homebutton.setPadding(30, 0, 0, 0);
-	if(firstTime == 1){
-		step=0;
-	sc = new ShowcaseView.Builder(this)
-    .setContentTitle("\nClipboard Clips")
-    .setContentText("\nYou can copy text from any application and it will get stored as a clip.\nTouch 'Next' to continue.")
-    .hideOnTouchOutside()
-    .setStyle(R.style.MyShowcaseView)
-    .build();
-	sc.setGravity(Gravity.RIGHT);
-	final Button showCaseButton = (Button) findViewById(R.id.showcase_button);
 	
-	 showCaseButton.setOnClickListener(new OnClickListener() {
-	  	 
-	    	@Override
-	    	public void onClick(View view) {
-	    		
-	    		if (step == 0){
-	    		sc.hide();
-	    		ViewTarget target = new ViewTarget(R.id.fab,MainActivity.this);
-	    		sc = new ShowcaseView.Builder(MainActivity.this)
-	    		.setTarget(target)
-	    	    .setContentTitle("\n\nAdd New Clip")
-	    	    .setContentText("\nYou can add your own Note anytime by touching the '+' button .\nTouch 'Next' to continue.")
-	    	    .hideOnTouchOutside()
-	    	    .setStyle(R.style.MyShowcaseView)
-	    	    .build();
-	    		sc.setGravity(Gravity.LEFT);
-	    		step =1;
-	    		}else{  	 
-	    	    		mDrawerLayout.openDrawer(mDrawerPane);
-	    	    		sc.hide();
-	    	    		 ViewTarget target = new ViewTarget(R.id.fab,MainActivity.this);
-	    	    		sc = new ShowcaseView.Builder(MainActivity.this)
-	    	    		.setTarget(target)
-	    	    	    .setContentTitle("\n\nMy Notes")
-	    	    	    .setContentText("\nYou can view your notes by touching the 'My Notes'.")
-	    	    	    .hideOnTouchOutside()
-	    	    	    .setStyle(R.style.MyShowcaseView)
-	    	    	    .build();
-	    	    		sc.setGravity(Gravity.RIGHT);
-	    		}
-	    	    	}
-	    	});
-	    	}
+	if(firstTime==1){
+		fullTutorialOne();
+		firstTime=0;
+	}
+	    	
 	}
    
 	@Override
@@ -560,6 +567,138 @@ public class MainActivity extends Activity {
 	}//onActivityResult
    
    
+	public void fullTutorialOne(){
+		if(currentClipView.equals("clips")){
+			drawerSelectPosition = 0;
+		}else if(currentClipView.equals("myClips")) {
+			drawerSelectPosition=1;
+		}
+			step=0;
+		sc = new ShowcaseView.Builder(this)
+	    .setContentTitle("Clipboard Clips")
+	    .setContentText("\nYou can copy text from any application and it will get stored as a clip here.\n\nTouch 'Next' to continue.")
+	    .hideOnTouchOutside()
+	    .setShowcaseEventListener(new OnShowcaseEventListener() {
+
+            @Override
+            public void onShowcaseViewShow(final ShowcaseView scv) { }
+
+            @Override
+            public void onShowcaseViewHide(final ShowcaseView scv) {
+                scv.setVisibility(View.GONE);
+                fullTutorialTwo();
+            }
+
+            @Override 
+            public void onShowcaseViewDidHide(final ShowcaseView scv) { }
+
+        })
+        .build();
+		if(scale <1.5){
+			sc.setStyle(R.style.MyShowcaseView2);
+		}else {
+			sc.setStyle(R.style.MyShowcaseView);
+		}
+		sc.setGravity(Gravity.LEFT);
+		}	
+
+	public void fullTutorialTwo(){
+		 new ViewTarget(R.id.fab,MainActivity.this);
+		 ViewTarget target = new ViewTarget(R.id.fab,MainActivity.this);
+ 		sc = new ShowcaseView.Builder(MainActivity.this)
+ 		.setTarget(target)
+ 	    .setContentTitle("Add New Note")
+ 	    .setContentText("\nYou can add your own Note anytime by touching the '+' button .\n\nTouch 'Next' to continue.")
+ 	    .hideOnTouchOutside()
+ 	    .setShowcaseEventListener(new OnShowcaseEventListener() {
+
+            @Override
+            public void onShowcaseViewShow(final ShowcaseView scv) { }
+
+            @Override
+            public void onShowcaseViewHide(final ShowcaseView scv) {
+                scv.setVisibility(View.GONE);
+                fullTutorialThree();
+            }
+
+            @Override 
+            public void onShowcaseViewDidHide(final ShowcaseView scv) { }
+
+        })
+ 	    .build();
+ 		if(scale <1.5){
+			sc.setStyle(R.style.MyShowcaseView2);
+		}else {
+			sc.setStyle(R.style.MyShowcaseView);
+		}
+ 		sc.setGravity(Gravity.LEFT);
+		
+	}
+	
+	public void fullTutorialThree(){
+		ViewTarget target = new ViewTarget(android.R.id.home,MainActivity.this);
+		sc = new ShowcaseView.Builder(MainActivity.this)
+		.setTarget(target)
+	    .setContentTitle("My Clipboard Clips")
+	    .setContentText("\nYou can get your Clipboard Clips by touching the 'Clipboard' tab inside the Navigation Bar.")
+	    .hideOnTouchOutside()
+	    .setShowcaseEventListener(new OnShowcaseEventListener() {
+
+            @Override
+            public void onShowcaseViewShow(final ShowcaseView scv) { }
+
+            @Override
+            public void onShowcaseViewHide(final ShowcaseView scv) {
+                scv.setVisibility(View.GONE);
+                fullTutorialFour();
+            }
+
+            @Override 
+            public void onShowcaseViewDidHide(final ShowcaseView scv) { }
+
+        })
+	    .build();
+		if(scale <1.5){
+			sc.setStyle(R.style.MyShowcaseView2);
+		}else {
+			sc.setStyle(R.style.MyShowcaseView);
+		}
+		sc.setGravity(Gravity.LEFT);
+		
+	}
+	public void fullTutorialFour(){
+		
+		 ViewTarget target = new ViewTarget(android.R.id.home,MainActivity.this);
+		sc = new ShowcaseView.Builder(MainActivity.this)
+		.setTarget(target)
+	    .setContentTitle("My Notes")
+	    .setContentText("\nYou can view your Notes by touching the 'My Notes' tab  inside the Navigation Bar.")
+	    .hideOnTouchOutside()
+	    .setShowcaseEventListener(new OnShowcaseEventListener() {
+
+            @Override
+            public void onShowcaseViewShow(final ShowcaseView scv) { }
+
+            @Override
+            public void onShowcaseViewHide(final ShowcaseView scv) {
+                scv.setVisibility(View.GONE);
+                mDrawerLayout.openDrawer(mDrawerPane);
+            }
+
+            @Override 
+            public void onShowcaseViewDidHide(final ShowcaseView scv) { }
+
+        })
+	    .build();
+		sc.setButtonText("Ok. Got it");
+		if(scale <1.5){
+			sc.setStyle(R.style.MyShowcaseView2);
+		}else {
+			sc.setStyle(R.style.MyShowcaseView);
+		}
+		sc.setGravity(Gravity.LEFT);
+		
+	}
    public void arrangeByFunc(final List<ClipObject> clips, final int arrType){
 		list.clear();
 		switch (arrType){
@@ -758,16 +897,20 @@ public class MainActivity extends Activity {
 		
 		
 	}
-	
+  public void savePreference(){
+	  SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+	    SharedPreferences.Editor editor = sharedPreferences.edit();
+	    editor.putInt("arrangement", arrangement);
+	    editor.putInt("firstTime", firstTime);
+	    editor.putString("currentClipView", currentClipView);
+	    editor.putInt("notificationToast", notificationToast);
+	    editor.commit();
+  }
 	@Override
 	protected void onStop() {
 	// TODO Auto-generated method stub
 	super.onStop();
-	SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-    SharedPreferences.Editor editor = sharedPreferences.edit();
-    editor.putInt("arrangement", arrangement);
-    editor.putString("currentClipView", currentClipView);
-    editor.commit();
+	savePreference();
 	}
 	@Override
 	protected void onRestart(){
@@ -794,8 +937,8 @@ public class MainActivity extends Activity {
 
 overridePendingTransition(R.animator.activity_open_scale,R.animator.activity_close_translate);
 	 }
-	 
-} 
+
+}
 
 
 

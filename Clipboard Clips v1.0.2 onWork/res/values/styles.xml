@@ -46,7 +46,7 @@
     <style name="ShowcaseView">
         <item name="sv_titleTextAppearance">@style/TextAppearance.ShowcaseView.Title</item>
         <item name="sv_detailTextAppearance">@style/TextAppearance.ShowcaseView.Detail</item>
-        <item name="sv_backgroundColor">#9533B5E5</item>
+        <item name="sv_backgroundColor">#33B5E5</item>
         <item name="sv_buttonText">@android:string/ok</item>
     </style>
     
@@ -54,7 +54,7 @@
         <item name="sv_titleTextAppearance">@style/TextAppearance.ShowcaseView.Title</item>
         <item name="sv_detailTextAppearance">@style/TextAppearance.ShowcaseView.Detail</item>
         <item name="android:gravity">bottom</item>
-        <item name="sv_backgroundColor">#9533B5E5</item>
+        <item name="sv_backgroundColor">#33B5E5</item>
      
         <item name="sv_buttonText">Next</item>
     </style>
@@ -66,17 +66,36 @@
      
         <item name="sv_buttonText">Ok.I got it.</item>
     </style>
+    
+        <style name="MyShowcaseView2">
+          <item name="sv_titleTextAppearance">@style/TextAppearance.ShowcaseView.Title1</item>
+        <item name="sv_detailTextAppearance">@style/TextAppearance.ShowcaseView.Detail1</item>
+        <item name="android:gravity">bottom</item>
+        <item name="sv_backgroundColor">#33B5E5</item>
+    </style>
 
     <style name="TextAppearance.ShowcaseView.Title" parent="android:style/TextAppearance.Large">
         <item name="android:textColor">#050d28</item>
            <item name="android:textStyle">normal|bold</item>
-        <item name="android:textSize">35sp</item>
+        <item name="android:textSize">33sp</item>
+    </style>
+    
+      <style name="TextAppearance.ShowcaseView.Title1" parent="android:style/TextAppearance.Large">
+        <item name="android:textColor">#050d28</item>
+           <item name="android:textStyle">normal|bold</item>
+        <item name="android:textSize">20sp</item>
     </style>
 
     <style name="TextAppearance.ShowcaseView.Detail" parent="android:style/TextAppearance">
         <item name="android:textColor">#FFFFFF</item>
             <item name="android:textStyle">normal|italic</item>
-        <item name="android:textSize">25sp</item>
+        <item name="android:textSize">22sp</item>
+    </style>
+    
+       <style name="TextAppearance.ShowcaseView.Detail1" parent="android:style/TextAppearance">
+        <item name="android:textColor">#FFFFFF</item>
+            <item name="android:textStyle">normal|italic</item>
+        <item name="android:textSize">15sp</item>
     </style>
 
     <style name="TextAppearance.ShowcaseView.Detail.Light">
