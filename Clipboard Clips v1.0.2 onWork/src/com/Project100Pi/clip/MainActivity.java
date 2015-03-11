@@ -21,6 +21,8 @@ import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -62,7 +64,7 @@ public class MainActivity extends Activity{
 	 
 	ArrayList<NavItem> mNavItems = new ArrayList<NavItem>();
 		private JazzyListView myListView;
-		MyDB db = new MyDB(this);
+		MyDB db = null;
 		String full="";
 		private SimpleAdapter sa;
 		Parcelable state = null;
@@ -109,6 +111,13 @@ public class MainActivity extends Activity{
 			{
 				e.printStackTrace();
 			}
+			if(currentClipView.equals("clips")){
+		   		emptyTextView.setText("(No Clips to Display)");
+		   		emptyTextView1.setText("Copy any text from any application to add a New clip");
+		   		}else if(currentClipView.equals("myClips")){
+		   			emptyTextView.setText("No Notes to Display");
+			   		emptyTextView1.setText("(Touch the '+' button to add a New Note)");
+		   		}
 		 emptyTextView.setVisibility(View.VISIBLE);    
 		 emptyTextView1.setVisibility(View.VISIBLE);
 			return;
@@ -252,7 +261,21 @@ public class MainActivity extends Activity{
 	    // Close the drawer
 	    
 	}
-	
+	boolean isTableExists(SQLiteDatabase db, String tableName)
+    {
+        if (tableName == null || db == null || !db.isOpen())
+        {
+            return false;
+        }
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM sqlite_master WHERE type = ? AND name = ?", new String[] {"table", tableName});
+        if (!cursor.moveToFirst())
+        {
+            return false;
+        }
+        int count = cursor.getInt(0);
+        cursor.close();
+        return count > 0;
+    }
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 	    super.onPostCreate(savedInstanceState);
@@ -264,7 +287,7 @@ public class MainActivity extends Activity{
 		super.onCreate(savedInstanceState);
 	       // String pastedata;
 			db = new MyDB(this);
-	   
+			db.getWritableDatabase();
 		overridePendingTransition(R.animator.activity_open_translate,R.animator.activity_close_scale);
 	    setContentView(R.layout.activity_main);
 	    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -297,15 +320,15 @@ public class MainActivity extends Activity{
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
 		scale = metrics.density;
 		
-		mNavItems.add(new NavItem("Clipboard", "Clips", R.drawable.clipboard_icon));
-	    mNavItems.add(new NavItem("My Notes", " Clips", R.drawable.notes_icon2));
-	    mNavItems.add(new NavItem("Tutorial", "Again", R.drawable.action_help));
+		mNavItems.add(new NavItem("Clipboard", "Clips", R.drawable.note));
+	    mNavItems.add(new NavItem("My Notes", " Clips", R.drawable.edit_item));
+	    mNavItems.add(new NavItem("Tutorial", "Again", R.drawable.help));
 	    if(notificationToast == 1){
-	    	 mNavItems.add(new NavItem("Turn Notification Toast", "OFF", R.drawable.icon_notify));	
+	    	 mNavItems.add(new NavItem("Turn Notification Toast", "OFF", R.drawable.comment_bubble));	
 	    }else if(notificationToast == 0){
-	    	mNavItems.add(new NavItem("Turn Notification Toast", "ON", R.drawable.icon_notify));
+	    	mNavItems.add(new NavItem("Turn Notification Toast", "ON", R.drawable.comment_bubble));
 	    }
-	    mNavItems.add(new NavItem("About", "Get to know about us", R.drawable.ic_action_about));
+	    mNavItems.add(new NavItem("About", "Get to know about us", R.drawable.info));
 	    // DrawerLayout
 	    mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
 	 
@@ -352,7 +375,7 @@ public class MainActivity extends Activity{
 	    		case 3:
 	    			if(notificationToast == 0){
 		        		notificationToast = 1;
-		        		mNavItems.set(3, new NavItem("Turn Notification Toast", "OFF", R.drawable.icon_notify));
+		        		mNavItems.set(3, new NavItem("Turn Notification Toast", "OFF", R.drawable.comment_bubble));
 		        		final Toast toast = Toast.makeText(getApplicationContext(),"Notification Toast Turned ON",Toast.LENGTH_SHORT);
  		        	   toast.show();
  		        	   Handler handler = new Handler();
@@ -364,7 +387,7 @@ public class MainActivity extends Activity{
  		           }, 1000);
 		        	} else if(notificationToast == 1){
 		        		notificationToast = 0;
-		        		mNavItems.set(3, new NavItem("Turn Notification Toast", "ON", R.drawable.icon_notify));
+		        		mNavItems.set(3, new NavItem("Turn Notification Toast", "ON", R.drawable.comment_bubble));
 		        	}
 	    			mDrawerList.setAdapter(adapter);
 	    			adapter.notifyDataSetChanged();

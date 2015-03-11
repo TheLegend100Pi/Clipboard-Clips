@@ -30,10 +30,27 @@ public class MyDB extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
 }
 
+    boolean isTableExists(SQLiteDatabase db, String tableName)
+    {
+        if (tableName == null || db == null || !db.isOpen())
+        {
+            return false;
+        }
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM sqlite_master WHERE type = ? AND name = ?", new String[] {"table", tableName});
+        if (!cursor.moveToFirst())
+        {
+            return false;
+        }
+        int count = cursor.getInt(0);
+        cursor.close();
+        return count > 0;
+    }
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		// TODO Auto-generated method stub
+		Boolean isClipsExists = isTableExists(db,TABLE);
+		Boolean isMyClipsExists = isTableExists(db, MY_TABLE);
 		
 		  String CREATE_MY_CLIPS_TABLE = "CREATE TABLE IF NOT EXISTS " + MY_TABLE + "("
 	                + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_NAME + " TEXT,"
@@ -52,6 +69,24 @@ public class MyDB extends SQLiteOpenHelper {
 		
 	}
 	
+	@Override
+	public void onOpen(SQLiteDatabase db) {
+		// TODO Auto-generated method stub
+		super.onOpen(db);
+		Boolean isClipsExists = isTableExists(db,TABLE);
+		Boolean isMyClipsExists = isTableExists(db, MY_TABLE);
+		
+		String CREATE_MY_CLIPS_TABLE = "CREATE TABLE IF NOT EXISTS " + MY_TABLE + "("
+                + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_NAME + " TEXT,"
+                + "createdAt TEXT, fromApp TEXT, copyCount INTERGER DEFAULT 0)";
+        db.execSQL(CREATE_MY_CLIPS_TABLE);
+        
+	String CREATE_CLIPS_TABLE = "CREATE TABLE IF NOT EXISTS " + TABLE + "("
+            + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_NAME + " TEXT,"
+            + "createdAt TEXT, fromApp TEXT, copyCount INTERGER DEFAULT 0)";
+    db.execSQL(CREATE_CLIPS_TABLE);
+	}
+
 	public void insertClip(String tableName, String currClip, String dateTime,String appName) {
 	    SQLiteDatabase db = this.getWritableDatabase();
 	 
